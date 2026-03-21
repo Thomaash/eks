@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@std/path": "jsr:@std/path",
+    "@std/fs": "jsr:@std/fs",
+    "fzf": "npm:fzf",
+    "@inquirer/prompts": "npm:@inquirer/prompts"
+  }
+}
