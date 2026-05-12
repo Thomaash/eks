@@ -1,6 +1,6 @@
 # eks
 
-`eks` is a Deno CLI that discovers runnable scripts in your project — `Makefile` targets and `package.json` scripts — presents them in a fuzzy-searchable picker, and runs your selection. It is published on JSR as [`@tomina/eks`](https://jsr.io/@tomina/eks) and is meant to be installed as a global executable.
+`eks` is a Deno CLI that discovers runnable scripts in your project — `Makefile` targets, `package.json` scripts, and Deno tasks from `deno.json` or `deno.jsonc` — presents them in a fuzzy-searchable picker, and runs your selection. It is published on JSR as [`@tomina/eks`](https://jsr.io/@tomina/eks) and is meant to be installed as a global executable.
 
 ## Install
 
@@ -26,7 +26,9 @@ eks --editor nvim            # override the editor used for batch mode and failu
 
 ### Single-pick mode (default)
 
-`eks` discovers scripts (`Makefile` targets, `package.json` scripts, etc.), shows them in a fuzzy picker, and executes the one you select.
+`eks` discovers scripts from `Makefile`, `package.json`, `deno.json`, and `deno.jsonc`, shows them in a fuzzy picker, and executes the one you select.
+
+When a discovered Deno config declares `workspace` members, `eks` includes their tasks and renders them as `deno task --cwd <member> <task>`.
 
 ### Multi-pick mode (`--multiple`)
 
@@ -53,13 +55,13 @@ The value must be a single executable name (`nvim`, `vim`, `nano`, `code`, …).
 
 `eks` needs the following Deno permissions:
 
-| Flag            | Reason                                                                    |
-| --------------- | ------------------------------------------------------------------------- |
-| `--allow-env`   | Read `HOME` for path display, and `VISUAL`/`EDITOR` for editor resolution |
-| `--allow-read`  | Read `Makefile` and `package.json` to discover scripts                    |
-| `--allow-run`   | Execute the selected script                                               |
-| `--allow-sys`   | Query terminal size for the picker UI                                     |
-| `--allow-write` | Create the temp batch file for `--multiple` mode (unused in single-pick)  |
+| Flag            | Reason                                                                             |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `--allow-env`   | Read `HOME` for path display, and `VISUAL`/`EDITOR` for editor resolution          |
+| `--allow-read`  | Read `Makefile`, `package.json`, `deno.json`, and `deno.jsonc` to discover scripts |
+| `--allow-run`   | Execute the selected script                                                        |
+| `--allow-sys`   | Query terminal size for the picker UI                                              |
+| `--allow-write` | Create the temp batch file for `--multiple` mode (unused in single-pick)           |
 
 If a permission is missing, Deno refuses to start with a `NotCapable` error. Re-install with the missing flag to fix it.
 
