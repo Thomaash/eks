@@ -5,8 +5,11 @@ import { findAllPackageJSONScripts } from "./find-all-package-json-scripts.ts";
 import { findUp } from "./find-up.ts";
 
 /**
- * Discovers all runnable scripts in the current project by searching up the directory tree for a `Makefile` and/or `package.json`.
+ * Discovers all runnable scripts in the current project by walking up the directory tree to find any of `Makefile`, `package.json`, `deno.json`, and `deno.jsonc`.
  * Aggregates their targets/scripts into column-aligned, human-readable strings.
+ *
+ * When a discovered Deno config declares `workspace` members, member tasks are
+ * included (rendered as `deno task --cwd <member> <task>`).
  *
  * Each returned string has the format:
  * ```
