@@ -1,4 +1,5 @@
 import type { CommandEntry } from "./find-all-scripts-types.ts";
+import { findAllDenoTasks } from "./find-all-deno-tasks.ts";
 import { findAllMakefileScripts } from "./find-all-makefile-scripts.ts";
 import { findAllPackageJSONScripts } from "./find-all-package-json-scripts.ts";
 import { findUp } from "./find-up.ts";
@@ -29,6 +30,12 @@ export async function findAllScripts(): Promise<string[]> {
     ...(await findUp("package.json").then(
       (path): Promise<CommandEntry[]> | [] =>
         path ? findAllPackageJSONScripts(path) : [],
+    )),
+    ...(await findUp("deno.json").then((path): Promise<CommandEntry[]> | [] =>
+      path ? findAllDenoTasks(path) : [],
+    )),
+    ...(await findUp("deno.jsonc").then((path): Promise<CommandEntry[]> | [] =>
+      path ? findAllDenoTasks(path) : [],
     )),
   ];
 

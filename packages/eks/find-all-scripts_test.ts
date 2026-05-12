@@ -16,19 +16,82 @@ async function withFixtureCwd<T>(
   }
 }
 
-Deno.test("findAllScripts combines Makefile and package.json sources into aligned formatted output", async () => {
+Deno.test("findAllScripts combines Makefile, package.json, and Deno task sources into aligned formatted output", async () => {
   await withFixtureCwd("mixed", async () => {
     const lines = await findAllScripts();
 
-    assertEquals(lines.length, 4, "should have 4 entries (2 Makefile + 2 package.json)");
+    assertEquals(
+      lines.length,
+      6,
+      "should have 6 entries (2 Makefile + 2 package.json + 2 Deno tasks)",
+    );
 
     const makeEntries = lines.filter((line) => line.startsWith("make"));
     const npmEntries = lines.filter((line) => line.startsWith("npm"));
+    const denoEntries = lines.filter((line) => line.startsWith("deno task"));
     assertEquals(makeEntries.length, 2, "should have 2 Makefile entries");
     assertEquals(npmEntries.length, 2, "should have 2 package.json entries");
+    assertEquals(denoEntries.length, 2, "should have 2 Deno task entries");
 
     for (const line of lines) {
       assertEquals(line.includes("#"), true, `each line should contain '#' separator: ${line}`);
+    }
+  });
+});
+
+Deno.test("findAllScripts includes a 'deno task ...' line in the mixed fixture", async () => {
+  await withFixtureCwd("mixed", async () => {
+    const lines = await findAllScripts();
+    const joinedOutput = lines.join("\n");
+
+    assertEquals(
+      joinedOutput.includes("deno task"),
+      true,
+      "output should contain a 'deno task' line",
+    );
+    assertEquals(
+      joinedOutput.includes("check"),
+      true,
+      "output should include the 'check' Deno task name",
+    );
+    assertEquals(
+      joinedOutput.includes("Run Deno benchmarks"),
+      true,
+      "output should include the Deno task object-form description",
+    );
+  });
+});
+
+Deno.test("findAllScripts in a deno-only fixture returns only Deno task entries", async () => {
+  await withFixtureCwd("deno-only", async () => {
+    const lines = await findAllScripts();
+
+    assertEquals(lines.length, 3, "deno-only fixture has 3 Deno tasks");
+
+    for (const line of lines) {
+      assert(
+        line.startsWith("deno task"),
+        `every line should start with 'deno task' in a deno-only fixture: "${line}"`,
+      );
+      assert(
+        !line.includes("make "),
+        `no line should reference Make in a deno-only fixture: "${line}"`,
+      );
+      assert(
+        !line.includes("npm run") && !line.includes("pnpm run"),
+        `no line should reference npm/pnpm in a deno-only fixture: "${line}"`,
+      );
+    }
+
+    // Alignment: all '#' separators should be at the same column.
+    const separatorPositions = lines.map((line) => line.indexOf("#"));
+    const firstPosition = separatorPositions[0];
+    for (let i = 1; i < separatorPositions.length; i++) {
+      assertEquals(
+        separatorPositions[i],
+        firstPosition,
+        `all deno-only lines should align on '#', line ${i} at ${separatorPositions[i]} vs ${firstPosition}`,
+      );
     }
   });
 });
@@ -55,7 +118,7 @@ Deno.test("findAllScripts includes expected commands and descriptions from both 
     const lines = await findAllScripts();
     const joinedOutput = lines.join("\n");
 
-    const expectedCommands = ["make", "build", "test", "npm run", "dev", "format"];
+    const expectedCommands = ["make", "build", "test", "npm run", "dev", "format", "deno task", "check", "bench"];
     for (const command of expectedCommands) {
       assertEquals(
         joinedOutput.includes(command),

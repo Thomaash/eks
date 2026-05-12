@@ -1,0 +1,17 @@
+{
+  // Top-level tasks for the deno-only fixture.
+  // Exercises all three task value shapes accepted by Deno.
+  "tasks": {
+    // String form: the command itself is also used as the description.
+    "dev": "deno run -A mod.ts",
+    // Object form with explicit description.
+    "build": {
+      "command": "deno run -A build.ts",
+      "description": "Build the project"
+    },
+    // Object form without description: command falls back as description.
+    "lint": {
+      "command": "deno lint"
+    }
+  }
+}

@@ -18,7 +18,7 @@ Deno.test("packages/eks/deno.jsonc contains the five import mappings", () => {
   const imports = eksConfig["imports"] as Record<string, string>;
 
   assert(imports !== undefined, "imports key must exist in packages/eks/deno.jsonc");
-  assertEquals(Object.keys(imports).length, 7, "must have exactly 7 import mappings");
+  assertEquals(Object.keys(imports).length, 8, "must have exactly 8 import mappings");
   assertEquals(imports["@std/assert"], "jsr:@std/assert@^1.0.19");
   assertEquals(imports["@std/path"], "jsr:@std/path@^1.1.4");
   assertEquals(imports["@std/fs"], "jsr:@std/fs@^1.0.23");

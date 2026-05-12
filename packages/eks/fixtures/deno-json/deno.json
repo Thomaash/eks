@@ -1,0 +1,9 @@
+{
+  // This file intentionally uses the .json extension while still containing
+  // a JSONC-style comment. A strict JSON.parse would reject this; a JSONC
+  // parser accepts it. The parser must treat both extensions uniformly.
+  "tasks": {
+    "test": "deno test -A",
+    "fmt": "deno fmt"
+  }
+}

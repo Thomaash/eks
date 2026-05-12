@@ -1,0 +1,11 @@
+{
+  // Deno tasks in the mixed fixture, used to verify coexistence with
+  // Makefile targets and package.json scripts.
+  "tasks": {
+    "check": "deno check mod.ts",
+    "bench": {
+      "command": "deno bench",
+      "description": "Run Deno benchmarks"
+    }
+  }
+}
