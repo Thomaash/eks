@@ -43,7 +43,7 @@ export async function pickMultiple(
     const output = await command.output();
 
     if (output.success) {
-      await execEkssScripts(Deno.cwd(), tempFilePath);
+      await execEkssScripts(Deno.cwd(), tempFilePath, { editor });
     }
 
     return output.code;

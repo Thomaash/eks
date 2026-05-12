@@ -75,13 +75,18 @@ async function runCommand(
 }
 
 /**
- * Opens collected log files in the `vw` viewer, if available.
+ * Opens collected log files in the resolved editor, best-effort.
  *
- * This is a best-effort operation — if `vw` is not installed, the function returns silently.
+ * If the editor cannot be launched (e.g. not installed), the function returns silently
+ * so the caller can continue cleanup and re-throw the original execution error.
  *
  * @param tempDirPath - Directory containing `.stdout.log` and `.stderr.log` files.
+ * @param editor - Editor executable name to launch.
  */
-async function openLogViewer(tempDirPath: string): Promise<void> {
+async function openLogViewer(
+  tempDirPath: string,
+  editor: string,
+): Promise<void> {
   const logFilePaths = Array.from(Deno.readDirSync(tempDirPath))
     .filter((entry) => entry.isFile)
     .map((entry) => `${tempDirPath}/${entry.name}`);
@@ -89,8 +94,8 @@ async function openLogViewer(tempDirPath: string): Promise<void> {
   if (logFilePaths.length === 0) return;
 
   try {
-    const command = new Deno.Command("vw", {
-      args: ["--", ...logFilePaths],
+    const command = new Deno.Command(editor, {
+      args: logFilePaths,
       cwd: tempDirPath,
       stdin: "inherit",
       stdout: "inherit",
@@ -98,30 +103,42 @@ async function openLogViewer(tempDirPath: string): Promise<void> {
     });
     await command.output();
   } catch {
-    // vw viewer not available — proceed with re-throwing original error
+    // editor not available — proceed with re-throwing original error
   }
 }
+
+/**
+ * Options for {@link execEkssScripts}.
+ *
+ * @property editor - Editor executable used to open failure logs (best-effort).
+ */
+export type ExecEkssScriptsOptions = {
+  editor: string;
+};
 
 /**
  * Reads a script file and executes its commands in batches.
  *
  * Commands within a batch run concurrently; batches run sequentially.
  * Comment lines (starting with `#`) are ignored, and blank lines separate batches.
- * On failure, log files are opened in `vw` (if available) before the error is re-thrown.
+ * On failure, log files are opened in the resolved editor (best-effort) before the error is re-thrown.
  *
  * @param cwd - Working directory for all commands.
  * @param scriptFileArg - Path to the script file to execute.
+ * @param options - See {@link ExecEkssScriptsOptions}.
  * @throws {Error} If any command in any batch fails.
  *
  * @example
  * ```ts
- * await execEkssScripts("/project", "./scripts/deploy.sh");
+ * await execEkssScripts("/project", "./scripts/deploy.sh", { editor: "nano" });
  * ```
  */
 export async function execEkssScripts(
   cwd: string,
   scriptFileArg: string,
+  options: ExecEkssScriptsOptions,
 ): Promise<void> {
+  const { editor } = options;
   const tempDirPath = await Deno.makeTempDir();
   try {
     const scriptFilePath = resolve(scriptFileArg);
@@ -145,7 +162,7 @@ export async function execEkssScripts(
     console.info("[DONE]");
     console.info("");
   } catch (error) {
-    await openLogViewer(tempDirPath);
+    await openLogViewer(tempDirPath, editor);
     throw error;
   } finally {
     await Deno.remove(tempDirPath, { recursive: true });

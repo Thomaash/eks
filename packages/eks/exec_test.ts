@@ -41,7 +41,7 @@ Deno.test("execEkssScripts logs [PLAN], [EXEC], [OKAY], and [DONE] markers for s
     const scriptFile = join(tempDir, "log_test.sh");
     await Deno.writeTextFile(scriptFile, "echo hello\n");
 
-    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile));
+    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }));
     const tags = logs.map((args) => args[0]);
 
     assert(tags.includes("[PLAN]"), "should log [PLAN]");
@@ -63,7 +63,7 @@ Deno.test("execEkssScripts logs [FAIL] marker when command fails", async () => {
     };
 
     try {
-      await execEkssScripts(tempDir, scriptFile);
+      await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
     } catch {
       // expected
     } finally {
@@ -80,7 +80,7 @@ Deno.test("execEkssScripts completes without throwing for a script with a single
     const scriptFile = join(tempDir, "valid.sh");
     await Deno.writeTextFile(scriptFile, "echo hello\n");
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
   });
 });
 
@@ -90,7 +90,7 @@ Deno.test("execEkssScripts throws an error containing 'Command failed' for a scr
     await Deno.writeTextFile(scriptFile, "exit 1\n");
 
     const error = await assertRejects(
-      () => execEkssScripts(tempDir, scriptFile),
+      () => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }),
       Error,
     );
     assertStringIncludes(error.message, "Command failed");
@@ -106,7 +106,7 @@ Deno.test("execEkssScripts skips comment lines starting with '#' and executes on
       `# This is a comment\ntouch ${markerFile}\n# Another comment\n`,
     );
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     assert(await fileExists(markerFile), "marker file should exist after non-comment command executes");
   });
@@ -121,7 +121,7 @@ Deno.test("execEkssScripts strips inline comments after commands", async () => {
       `touch ${markerFile} # this is an inline comment\n`,
     );
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     assert(await fileExists(markerFile), "command before inline # should still execute");
   });
@@ -136,7 +136,7 @@ Deno.test("execEkssScripts prefixes commands with LC_ALL=en_US.UTF-8", async () 
       `printenv LC_ALL > ${outputFile}\n`,
     );
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     const content = (await Deno.readTextFile(outputFile)).trim();
     assertEquals(content, "en_US.UTF-8", "LC_ALL should be set by command prefix");
@@ -152,7 +152,7 @@ Deno.test("execEkssScripts trims leading whitespace from script lines", async ()
       `   touch ${markerFile}\n`,
     );
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     assert(await fileExists(markerFile), "indented command should still execute after trimming");
   });
@@ -167,7 +167,7 @@ Deno.test("execEkssScripts writes error logs on command failure", async () => {
     );
 
     const error = await assertRejects(
-      () => execEkssScripts(tempDir, scriptFile),
+      () => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }),
       Error,
     );
     assertStringIncludes(error.message, "Command failed with 42");
@@ -180,7 +180,7 @@ Deno.test("execEkssScripts handles script content with leading and trailing blan
     const scriptFile = join(tempDir, "padded.sh");
     await Deno.writeTextFile(scriptFile, `\n\ntouch ${markerFile}\n\n`);
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     assert(await fileExists(markerFile), "command should execute despite surrounding blank lines");
   });
@@ -192,7 +192,7 @@ Deno.test("execEkssScripts executes a command that ends with a hash character", 
     const scriptFile = join(tempDir, "endhash.sh");
     await Deno.writeTextFile(scriptFile, `touch ${markerFile} #\n`);
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     assert(await fileExists(markerFile), "command ending with # should still execute");
   });
@@ -204,7 +204,7 @@ Deno.test("execEkssScripts groups concurrent commands in a single batch in PLAN 
     // Two commands with no blank line between them = one batch
     await Deno.writeTextFile(scriptFile, `echo one\necho two\n`);
 
-    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile));
+    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }));
 
     // Count batches: each batch execution is followed by an empty log line
     // For a single batch of 2 commands: [PLAN], "", [EXEC]x2, [OKAY]x2, "", [DONE], ""
@@ -224,7 +224,7 @@ Deno.test("execEkssScripts logs exactly 3 empty lines: after plan, after batch, 
     const scriptFile = join(tempDir, "spacing.sh");
     await Deno.writeTextFile(scriptFile, `echo hello\n`);
 
-    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile));
+    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }));
     const emptyLogs = logs.filter((args) => args.length === 1 && args[0] === "");
     assertEquals(emptyLogs.length, 3, `should have exactly 3 empty spacing lines, got ${emptyLogs.length}`);
   });
@@ -241,7 +241,7 @@ Deno.test("execEkssScripts cleans up its internal temporary directory after succ
   await withTempDir(async (tempDir) => {
     const scriptFile = join(tempDir, "cleanup.sh");
     await Deno.writeTextFile(scriptFile, `echo hello\n`);
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
   });
 
   const dirsAfter = Array.from(Deno.readDirSync(tmpRoot))
@@ -263,7 +263,7 @@ Deno.test("execEkssScripts cleans up its internal temporary directory after fail
     const scriptFile = join(tempDir, "fail_cleanup.sh");
     await Deno.writeTextFile(scriptFile, `exit 1\n`);
     try {
-      await execEkssScripts(tempDir, scriptFile);
+      await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
     } catch {
       // expected
     }
@@ -303,7 +303,7 @@ Deno.test("execEkssScripts writes .stdout.log and .stderr.log files on command f
     };
 
     try {
-      await execEkssScripts(tempDir, scriptFile);
+      await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
     } catch {
       // expected
     } finally {
@@ -349,7 +349,7 @@ Deno.test("execEkssScripts executes both command batches separated by a blank li
       `touch ${markerA}\n\ntouch ${markerB}\n`,
     );
 
-    await execEkssScripts(tempDir, scriptFile);
+    await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     assert(await fileExists(markerA), "first batch marker file should exist");
     assert(await fileExists(markerB), "second batch marker file should exist");
