@@ -59,6 +59,7 @@ const sourceFiles = [
   "set-terminal-title.ts",
   "pick-one.ts",
   "pick-multiple.ts",
+  "parse-eks-args.ts",
 ];
 
 Deno.test("deno check passes for all source files", async () => {
