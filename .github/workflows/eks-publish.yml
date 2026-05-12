@@ -1,0 +1,31 @@
+name: eks publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/eks/**'
+      - '.github/workflows/eks-publish.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run eks test suite
+        run: deno test packages/eks/ --allow-env --allow-read --allow-run --allow-sys --allow-write
+
+      - name: Publish to JSR
+        working-directory: packages/eks
+        run: deno publish
