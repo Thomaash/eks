@@ -1,0 +1,7 @@
+.data/
+.nuxt/
+.output/
+/.stryker-tmp/
+dist/
+node_modules/
+reports/

@@ -1,16 +1,7 @@
-#!/usr/bin/env -S deno run --allow-env --allow-read --allow-run --allow-sys
-
 import { Fzf as FZF } from "fzf";
 import { search } from "@inquirer/prompts";
 
 import { findAllScripts } from "./find-all-scripts.ts";
-import { setTerminalTitle } from "./set-terminal-title.ts";
-
-setTerminalTitle(
-  `NPF | ${Deno.cwd().replace(Deno.env.get("HOME") ?? "~", "~")}`,
-);
-
-const scripts = await findAllScripts();
 
 type Choice<Value> = {
   value: Value;
@@ -21,6 +12,13 @@ type Choice<Value> = {
   type?: never;
 };
 
+/**
+ * Presents an interactive fuzzy-search picker in the terminal.
+ * Powered by `fzf` and `@inquirer/prompts`.
+ *
+ * @param items - The list of selectable strings.
+ * @returns The selected item, or `undefined` if the user cancels.
+ */
 async function fuzzyPicker(items: string[]): Promise<string | undefined> {
   const fzf = new FZF(items);
 
@@ -44,12 +42,26 @@ async function fuzzyPicker(items: string[]): Promise<string | undefined> {
   return result;
 }
 
-const script = await fuzzyPicker(scripts);
+/**
+ * Discovers all project scripts and presents them in an interactive fuzzy-search picker.
+ * The selected script is executed via `dash`.
+ *
+ * @returns The exit code of the executed script, or `0` if no script was selected.
+ *
+ * @example
+ * ```ts
+ * const exitCode = await pickOne();
+ * Deno.exit(exitCode);
+ * ```
+ */
+export async function pickOne(): Promise<number> {
+  const scripts = await findAllScripts();
 
-if (script) {
-  setTerminalTitle(
-    `NPF | ${Deno.cwd().replace(Deno.env.get("HOME") ?? "~", "~")} | ${script.replace(/#.*/, "")}`,
-  );
+  const script = await fuzzyPicker(scripts);
+
+  if (!script) {
+    return 0;
+  }
 
   const command = new Deno.Command("dash", {
     args: ["-c", script],
@@ -63,9 +75,5 @@ if (script) {
   });
   const output = await command.output();
 
-  Deno.exitCode = output.code;
-
-  // TODO: The line above should be enough. There is something hanging and
-  // reading stdin though and I can't figure out what.
-  Deno.exit(output.code);
+  return output.code;
 }

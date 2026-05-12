@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/stryker-mutator/stryker/master/packages/core/schema/stryker-core.json",
+  "mutate": [
+    "packages/eks/*.ts",
+    "!packages/eks/*_test.ts",
+    "!packages/eks/find-all-scripts-types.ts",
+    "!packages/eks/pick-one.ts",
+    "!packages/eks/pick-multiple.ts",
+    "!packages/eks/mod.ts"
+  ],
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "deno test packages/eks/ --ignore=packages/eks/shebang_test.ts --allow-env --allow-read --allow-run --allow-sys --allow-write"
+  },
+  "reporters": ["html", "clear-text", "progress"],
+  "timeoutMS": 60000,
+  "concurrency": 2
+}

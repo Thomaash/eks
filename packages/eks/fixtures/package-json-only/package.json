@@ -1,0 +1,10 @@
+{
+  "name": "example-npm-project",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc --build",
+    "test": "vitest run",
+    "lint": "eslint src/",
+    "start": "node dist/index.js"
+  }
+}

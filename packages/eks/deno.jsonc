@@ -1,0 +1,22 @@
+{
+  "name": "@tomina/eks",
+  "version": "0.1.0",
+  "license": "ISC",
+  "exports": {
+    ".": "./mod.ts"
+  },
+  "tasks": {
+    "eks": "deno run --allow-env --allow-read --allow-run --allow-sys --allow-write mod.ts",
+    "eks:multiple": "deno run --allow-env --allow-read --allow-run --allow-sys --allow-write mod.ts --multiple",
+    "stryker": "npx --yes @stryker-mutator/core run packages/eks/stryker.config.json"
+  },
+  "imports": {
+    "@inquirer/prompts": "npm:@inquirer/prompts@^8.3.2",
+    "@std/assert": "jsr:@std/assert@^1.0.19",
+    "@std/cli": "jsr:@std/cli@^1.0.28",
+    "@std/fs": "jsr:@std/fs@^1.0.23",
+    "@std/internal": "jsr:@std/internal@^1.0.12",
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "fzf": "npm:fzf@^0.5.2"
+  }
+}

@@ -1,8 +1,5 @@
 {
-  "imports": {
-    "@std/path": "jsr:@std/path",
-    "@std/fs": "jsr:@std/fs",
-    "fzf": "npm:fzf",
-    "@inquirer/prompts": "npm:@inquirer/prompts"
-  }
+  "nodeModulesDir": "auto",
+  "lock": { "frozen": true },
+  "workspace": ["./packages/eks", "./packages/docs"]
 }
