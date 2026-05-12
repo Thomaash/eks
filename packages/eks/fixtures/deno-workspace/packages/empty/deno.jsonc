@@ -1,0 +1,4 @@
+// empty member: config exists but defines no tasks
+{
+  "name": "@workspace/empty"
+}

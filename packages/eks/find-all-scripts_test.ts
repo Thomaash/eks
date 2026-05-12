@@ -200,3 +200,90 @@ Deno.test("findAllScripts produces lines of equal total length", async () => {
     }
   });
 });
+
+Deno.test("findAllScripts in a deno-workspace fixture includes root and member task lines", async () => {
+  await withFixtureCwd("deno-workspace", async () => {
+    const lines = await findAllScripts();
+    const joinedOutput = lines.join("\n");
+
+    // Root task is rendered with an empty modifier slot.
+    assert(
+      joinedOutput.includes("root-task"),
+      `output should include the root task name: ${joinedOutput}`,
+    );
+
+    // Member tasks render with --cwd ./<member>.
+    assert(
+      joinedOutput.includes("--cwd ./packages/web"),
+      `output should include '--cwd ./packages/web' for the web member: ${joinedOutput}`,
+    );
+    assert(
+      joinedOutput.includes("--cwd ./packages/api"),
+      `output should include '--cwd ./packages/api' for the api member: ${joinedOutput}`,
+    );
+
+    assert(
+      joinedOutput.includes("dev"),
+      "output should include the web 'dev' task name",
+    );
+    assert(
+      joinedOutput.includes("Build the web package"),
+      "output should include the object-form description from the web member",
+    );
+    assert(
+      joinedOutput.includes("serve"),
+      "output should include the api 'serve' task name",
+    );
+
+    // Empty and missing members contribute nothing.
+    assert(
+      !joinedOutput.includes("--cwd ./packages/empty"),
+      "member with config but no tasks should not appear",
+    );
+    assert(
+      !joinedOutput.includes("--cwd ./packages/missing"),
+      "missing member directory should not appear",
+    );
+
+    // Every line is still 'deno task ...' in this Deno-only fixture.
+    for (const line of lines) {
+      assert(
+        line.startsWith("deno task"),
+        `every line should start with 'deno task' in deno-workspace fixture: "${line}"`,
+      );
+    }
+
+    // Expected count: 1 root + 2 web + 1 api = 4.
+    assertEquals(
+      lines.length,
+      4,
+      "deno-workspace should produce 4 entries (1 root + 2 web + 1 api)",
+    );
+  });
+});
+
+Deno.test("findAllScripts in deno-workspace aligns '#' across root and member entries", async () => {
+  await withFixtureCwd("deno-workspace", async () => {
+    const lines = await findAllScripts();
+
+    const separatorPositions = lines.map((line) => line.indexOf("#"));
+    const firstPosition = separatorPositions[0];
+    for (let i = 1; i < separatorPositions.length; i++) {
+      assertEquals(
+        separatorPositions[i],
+        firstPosition,
+        `all deno-workspace lines should align on '#', line ${i} at ${separatorPositions[i]} vs ${firstPosition}`,
+      );
+    }
+
+    const lineLengths = lines.map((line) => line.length);
+    const expectedLength = lineLengths[0];
+    for (let i = 1; i < lineLengths.length; i++) {
+      assertEquals(
+        lineLengths[i],
+        expectedLength,
+        `all deno-workspace lines should have equal length ${expectedLength}, but line ${i} has length ${lineLengths[i]}`,
+      );
+    }
+  });
+});

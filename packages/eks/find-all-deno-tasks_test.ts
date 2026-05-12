@@ -149,3 +149,108 @@ Deno.test("findAllDenoTasks renders root tasks as 3-part commandParts with empty
     );
   }
 });
+
+Deno.test("findAllDenoTasks on a workspace root returns root tasks AND member tasks", async () => {
+  const denoConfigPath = `${fixturesDir}/deno-workspace/deno.jsonc`;
+
+  const entries = await findAllDenoTasks(denoConfigPath);
+
+  // Root task with empty modifier slot (Slice 1 preserved).
+  const rootEntries = entries.filter(
+    (entry) => entry.commandParts[2] === "root-task",
+  );
+  assertEquals(rootEntries.length, 1, "should include the root task");
+  assertEquals(rootEntries[0].commandParts, ["deno task", "", "root-task"]);
+  assertEquals(rootEntries[0].descriptionParts, ["echo root"]);
+
+  // Web member: string and object task forms, rendered with --cwd.
+  const webDev = entries.find(
+    (entry) =>
+      entry.commandParts[1] === "--cwd ./packages/web" &&
+      entry.commandParts[2] === "dev",
+  );
+  assertEquals(
+    webDev?.commandParts,
+    ["deno task", "--cwd ./packages/web", "dev"],
+    "web 'dev' task should be rendered with --cwd ./packages/web",
+  );
+  assertEquals(webDev?.descriptionParts, ["deno run -A mod.ts"]);
+
+  const webBuild = entries.find(
+    (entry) =>
+      entry.commandParts[1] === "--cwd ./packages/web" &&
+      entry.commandParts[2] === "build",
+  );
+  assertEquals(
+    webBuild?.commandParts,
+    ["deno task", "--cwd ./packages/web", "build"],
+    "web 'build' task should be rendered with --cwd ./packages/web",
+  );
+  assertEquals(webBuild?.descriptionParts, ["Build the web package"]);
+
+  // Api member (deno.json, not .jsonc): rendered with --cwd.
+  const apiServe = entries.find(
+    (entry) =>
+      entry.commandParts[1] === "--cwd ./packages/api" &&
+      entry.commandParts[2] === "serve",
+  );
+  assertEquals(
+    apiServe?.commandParts,
+    ["deno task", "--cwd ./packages/api", "serve"],
+    "api 'serve' task should be rendered with --cwd ./packages/api",
+  );
+  assertEquals(apiServe?.descriptionParts, ["deno run -A server.ts"]);
+
+  // Empty member (config without tasks) contributes nothing.
+  const emptyEntries = entries.filter(
+    (entry) => entry.commandParts[1] === "--cwd ./packages/empty",
+  );
+  assertEquals(
+    emptyEntries.length,
+    0,
+    "workspace member with a config but no tasks should contribute no entries",
+  );
+
+  // Missing member (no config at all) contributes nothing and does not error.
+  const missingEntries = entries.filter(
+    (entry) => entry.commandParts[1] === "--cwd ./packages/missing",
+  );
+  assertEquals(
+    missingEntries.length,
+    0,
+    "workspace member without a Deno config should contribute no entries",
+  );
+
+  // Total: 1 root + 2 web + 1 api = 4.
+  assertEquals(
+    entries.length,
+    4,
+    "should find exactly 4 tasks (1 root + 2 web + 1 api)",
+  );
+});
+
+Deno.test("findAllDenoTasks: empty workspace array yields only root tasks", async () => {
+  const denoConfigPath = `${fixturesDir}/deno-workspace-no-members/deno.jsonc`;
+
+  const entries = await findAllDenoTasks(denoConfigPath);
+
+  assertEquals(entries.length, 1, "should include only the root task");
+  assertEquals(entries[0].commandParts, ["deno task", "", "solo"]);
+  assertEquals(entries[0].descriptionParts, ["echo solo"]);
+});
+
+Deno.test("findAllDenoTasks: non-workspace config returns only the file's own tasks", async () => {
+  const denoConfigPath = `${fixturesDir}/deno-only/deno.jsonc`;
+
+  const entries = await findAllDenoTasks(denoConfigPath);
+
+  // Slice 1 behavior: no member entries should appear because there is no workspace array.
+  for (const entry of entries) {
+    assertEquals(
+      entry.commandParts[1],
+      "",
+      `non-workspace config should not produce --cwd entries, but got: ${entry.commandParts.join(" ")}`,
+    );
+  }
+  assertEquals(entries.length, 3, "deno-only fixture has exactly 3 tasks");
+});

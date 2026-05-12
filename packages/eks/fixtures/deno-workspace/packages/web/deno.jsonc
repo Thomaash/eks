@@ -1,0 +1,10 @@
+// web member
+{
+  "tasks": {
+    "dev": "deno run -A mod.ts",
+    "build": {
+      "command": "deno run -A build.ts",
+      "description": "Build the web package"
+    }
+  }
+}

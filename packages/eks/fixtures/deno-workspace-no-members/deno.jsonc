@@ -1,0 +1,7 @@
+// workspace root with an empty workspace array
+{
+  "workspace": [],
+  "tasks": {
+    "solo": "echo solo"
+  }
+}

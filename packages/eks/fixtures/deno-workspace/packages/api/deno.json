@@ -1,0 +1,6 @@
+{
+  // api member uses .json extension to exercise the unified JSONC parser
+  "tasks": {
+    "serve": "deno run -A server.ts"
+  }
+}

@@ -1,0 +1,12 @@
+// workspace root
+{
+  "workspace": [
+    "./packages/web",
+    "./packages/api",
+    "./packages/empty",
+    "./packages/missing"
+  ],
+  "tasks": {
+    "root-task": "echo root"
+  }
+}
