@@ -1,10 +1,21 @@
 # Eks Documentation
 
-Eks is a script runner that discovers and executes scripts from your project.
-It finds `Makefile` targets and `package.json` scripts, presents them in a fuzzy-searchable picker, and runs your selection.
+`eks` is a Deno CLI that discovers `Makefile` targets and `package.json` scripts in a project and lets you pick one — or several — to run from a fuzzy-searchable picker.
 
-## Usage Options
+## Highlights
 
-There are three ways to use Eks:
+- Walks up from the current directory to find a `Makefile` and/or `package.json`.
+- Fuzzy picker for single-script execution.
+- `--multiple` batch mode: edit the script list in your editor, then run sequential batches with intra-batch concurrency.
+- Configurable editor (`--editor`, `$VISUAL`, `$EDITOR`, `nano`) used for both the batch file and the failure-log viewer.
 
-1. **[Install via JSR](/eks/install)** -- install the `eks` and `ekss` executables globally with `deno install`
+## Pages
+
+- [Install](/eks/install) — install via `deno install` and required Deno permissions.
+- [Usage](/eks/usage) — single-pick and `--multiple` walkthroughs.
+- [Configuration](/eks/configuration) — `--editor` flag and environment variables.
+- [Troubleshooting](/eks/troubleshooting) — common errors and how to recover.
+
+## Package
+
+Published on JSR as [`@tomina/eks`](https://jsr.io/@tomina/eks).
