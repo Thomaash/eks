@@ -1,49 +1,87 @@
-# eks Monorepo
+# eks monorepo — contributor guide
 
-A Deno workspace monorepo containing the `eks` CLI tool for running scripts and a documentation site.
+This repository is a [Deno workspace](https://docs.deno.com/runtime/fundamentals/workspaces/) containing the `@tomina/eks` CLI and a Nuxt-based documentation site. This README is for contributors and coding agents working **inside** the repo. End-users should consult the published package and docs site (see [User docs](#user-docs)).
 
 ## Packages
 
-### packages/eks
+| Path            | Name          | Purpose                                                                |
+| --------------- | ------------- | ---------------------------------------------------------------------- |
+| `packages/eks`  | `@tomina/eks` | The CLI source — published to JSR. Entry: `./mod.ts`.                  |
+| `packages/docs` | (unpublished) | Nuxt + `@nuxt/content` documentation site, served at base URL `/eks/`. |
 
-CLI tool for discovering and running scripts from your project. It finds Makefile targets, package.json scripts, and other runnable tasks, then lets you pick which one to execute.
-
-- `deno task eks` -- launch the single-pick script runner (select one script to run)
-- `deno task ekss` -- launch the multi-pick script runner (select multiple scripts to run)
-
-### packages/docs
-
-Documentation site built with Nuxt Content.
-
-- `deno task dev` -- start the Nuxt development server
-- `deno task build` -- build the documentation site for production
-- `deno task generate` -- generate a static version of the documentation site
-
-## Project Structure
-
-```
-.
-├── deno.jsonc              # Root workspace configuration
-├── deno.lock               # Shared lock file
-├── packages/
-│   ├── eks/                # CLI tool
-│   │   └── deno.jsonc      # Package config with tasks and imports
-│   └── docs/               # Documentation site
-│       └── deno.jsonc      # Package config with tasks
-└── docs/
-    └── research/           # Research documentation
-```
-
-## Deno Workspace
-
-This project uses a [Deno workspace](https://docs.deno.com/runtime/fundamentals/workspaces/) to manage multiple packages. The root `deno.jsonc` declares the workspace members:
+The workspace is wired up in `/app/deno.jsonc`:
 
 ```jsonc
 {
-  "workspace": ["./packages/eks", "./packages/docs"]
+  "nodeModulesDir": "auto",
+  "lock": { "frozen": true },
+  "workspace": ["./packages/eks", "./packages/docs"],
 }
 ```
 
-Each package has its own `deno.jsonc` with package-specific tasks and import mappings. The root `deno.lock` file provides a shared lock file across all workspace members, ensuring consistent dependency versions.
+`lock` is frozen, so install/resolve steps will fail if `deno.lock` is out of sync — regenerate it intentionally when you change dependencies.
 
-Run tasks from the project root by navigating into the respective package directory, or use `deno task` within each package directory directly.
+## Local development
+
+Run tasks from within each package directory (the workspace does not define root-level aggregate tasks).
+
+### Run `eks` from source
+
+```sh
+cd packages/eks
+deno task eks            # single-pick script runner
+deno task eks:multiple   # multi-pick script runner
+```
+
+Both tasks invoke `mod.ts` with the permission set used in CI (`--allow-env --allow-read --allow-run --allow-sys --allow-write`).
+
+### Run the docs site
+
+```sh
+cd packages/docs
+deno task dev        # Nuxt dev server
+deno task build      # production build
+deno task generate   # static site generation
+```
+
+Note `nuxt.config.ts` sets `app.baseURL = '/eks/'`, so locally the site is served under that path.
+
+## Testing
+
+CI (`.github/workflows/eks-validate.yml`, runs on every push and PR) executes:
+
+```sh
+deno test packages/eks/ --allow-env --allow-read --allow-run --allow-sys --allow-write
+```
+
+Run the same command locally before opening a PR. Mutation testing is available via `deno task stryker` from `packages/eks/` (uses `npx @stryker-mutator/core`).
+
+## Linting and formatting
+
+There are currently **no repo-level lint/fmt tasks**. Use Deno's built-ins directly from the repo root:
+
+```sh
+deno fmt        # format the workspace
+deno fmt --check
+deno lint       # lint the workspace
+```
+
+## Release / publish flow
+
+`@tomina/eks` is published to JSR by `.github/workflows/eks-publish.yml`. The workflow triggers on pushes to `main` that touch `packages/eks/**` (or the workflow file itself), runs the test suite, then runs `deno publish` from `packages/eks/`.
+
+To cut a release:
+
+1. Bump the `version` field in `packages/eks/deno.jsonc`.
+2. Land the commit on `main` (via PR).
+3. The publish workflow runs automatically; JSR rejects republishing an existing version, so the version bump is what actually triggers a new release.
+
+The docs site is not currently auto-published from this repo.
+
+## Commit policy
+
+Per `AGENTS.md`: [Conventional Commits](https://www.conventionalcommits.org/) with scopes, one atomic change per commit. Words like "and"/"also" in a commit subject are a signal to split. Types in use: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`, `style`, `perf`, `build`.
+
+## User docs
+
+If you're looking to **use** `eks` rather than contribute to it, see the published package on JSR (`@tomina/eks`) and the documentation site generated from `packages/docs/`.
