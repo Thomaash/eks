@@ -1,5 +1,6 @@
 {
   "nodeModulesDir": "auto",
   "lock": { "frozen": true },
-  "workspace": ["./packages/eks", "./packages/docs"]
+  "workspace": ["./packages/eks", "./packages/docs"],
+  "exclude": [".stryker-tmp/"]
 }
