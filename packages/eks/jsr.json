@@ -1,6 +1,0 @@
-{
-  "name": "@tomina/eks",
-  "version": "1.0.0",
-  "license": "ISC",
-  "exports": "./mod.ts"
-}

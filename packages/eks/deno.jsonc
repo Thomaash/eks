@@ -1,9 +1,16 @@
 {
   "name": "@tomina/eks",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "ISC",
   "exports": {
     ".": "./mod.ts"
+  },
+  "publish": {
+    "exclude": [
+      "**/*_test.ts",
+      "**/fixtures/**",
+      "**/stryker.config.json"
+    ]
   },
   "tasks": {
     "eks": "deno run --allow-env --allow-read --allow-run --allow-sys --allow-write mod.ts",
