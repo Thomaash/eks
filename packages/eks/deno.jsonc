@@ -1,6 +1,7 @@
 {
   "name": "@tomina/eks",
   "version": "1.2.0",
+  "description": "A Deno CLI that discovers runnable scripts (Makefile targets, package.json scripts, Deno tasks) and runs them via a fuzzy picker.",
   "license": "ISC",
   "exports": {
     ".": "./mod.ts"
