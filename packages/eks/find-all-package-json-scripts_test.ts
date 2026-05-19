@@ -108,6 +108,48 @@ Deno.test("findAllPackageJSONScripts returns sub-package scripts in sorted path 
   }
 });
 
+// Passes under the original `find(1)` implementation (`find -name node_modules` is basename-anchored). Kept as a regression guard for the @std/fs/walk rewrite, whose `skip` regex must remain basename-anchored.
+Deno.test("findAllPackageJSONScripts prunes node_modules/.cache/.output/dist by basename, not substring", async () => {
+  const tempDir = await Deno.makeTempDir();
+  try {
+    const rootPackageJSONPath = `${tempDir}/package.json`;
+    await Deno.writeTextFile(
+      rootPackageJSONPath,
+      JSON.stringify({ name: "root", scripts: { build: "echo build" } }),
+    );
+
+    await Deno.mkdir(`${tempDir}/node_modules/inner`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/node_modules/inner/package.json`,
+      JSON.stringify({ name: "inner", scripts: { x: "echo x" } }),
+    );
+
+    await Deno.mkdir(`${tempDir}/dist`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/dist/package.json`,
+      JSON.stringify({ name: "dist", scripts: { y: "echo y" } }),
+    );
+
+    await Deno.mkdir(`${tempDir}/my-node_modules-helper`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/my-node_modules-helper/package.json`,
+      JSON.stringify({ name: "helper", scripts: { z: "echo z" } }),
+    );
+
+    const entries = await findAllPackageJSONScripts(rootPackageJSONPath);
+
+    assertEquals(entries.length, 2, "root + helper scripts only");
+    assertEquals(entries[0].commandParts, ["npm run", "", "build"]);
+    assertEquals(entries[1].commandParts, [
+      "npm run",
+      "--filter ./my-node_modules-helper",
+      "z",
+    ]);
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
 Deno.test("findAllPackageJSONScripts detects npm in mixed fixture with Makefile present", async () => {
   const packageJSONPath = `${fixturesDir}/mixed/package.json`;
 

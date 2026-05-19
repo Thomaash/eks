@@ -1,12 +1,16 @@
 import type { CommandEntry } from "./find-all-scripts-types.ts";
+import { walk } from "@std/fs/walk";
 import { dirname } from "@std/path/dirname";
 import { relative } from "@std/path/relative";
 
 /**
  * Discovers all npm/pnpm scripts across a project and its workspaces.
  *
- * Starting from the given root `package.json`, this function finds every nested `package.json` (skipping `node_modules`, `.cache`, `.output`, and `dist`) and collects their `"scripts"` entries.
- * It auto-detects whether the project uses pnpm (via `pnpm-lock.yaml`) and adjusts the generated command accordingly.
+ * Starting from the given root `package.json`, this function walks the
+ * filesystem in-process to find every nested `package.json` (skipping
+ * `node_modules`, `.cache`, `.output`, and `dist`) and collects their
+ * `"scripts"` entries. It auto-detects whether the project uses pnpm
+ * (via `pnpm-lock.yaml`) and adjusts the generated command accordingly.
  *
  * @param mainPackageJSONPath - Absolute path to the root `package.json`.
  * @returns An array of {@link CommandEntry} items, one per script.
@@ -20,48 +24,24 @@ import { relative } from "@std/path/relative";
 export async function findAllPackageJSONScripts(
   mainPackageJSONPath: string,
 ): Promise<CommandEntry[]> {
-  const command = new Deno.Command("find", {
-    args: [
-      dirname(mainPackageJSONPath),
+  const rootDir = dirname(mainPackageJSONPath);
 
-      "(",
-      "-name",
-      "package.json",
-      "-a",
-      "-type",
-      "f",
-      ")",
-
-      "-print0",
-
-      "-o",
-
-      "(",
-      "-name",
-      "node_modules",
-      "-o",
-      "-name",
-      ".cache",
-      "-o",
-      "-name",
-      ".output",
-      "-o",
-      "-name",
-      "dist",
-      ")",
-
-      "-prune",
-    ],
-    stdin: "inherit",
-    stdout: "piped",
-    stderr: "inherit",
-  });
-  const output = await command.output();
-  const foundPathsRaw = new TextDecoder().decode(output.stdout);
-  const subPackageJSONPaths = foundPathsRaw
-    .split("\0")
-    .filter((path): boolean => path !== mainPackageJSONPath && path !== "")
-    .sort();
+  const subPackageJSONPaths: string[] = [];
+  for await (
+    const entry of walk(rootDir, {
+      match: [/(^|[\\/])package\.json$/],
+      // `skip` is applied pre-descent: matched directories are never opened.
+      skip: [/(^|[\\/])(node_modules|\.cache|\.output|dist)$/],
+      includeDirs: false,
+      includeSymlinks: false,
+      followSymlinks: false,
+    })
+  ) {
+    if (entry.path !== mainPackageJSONPath) {
+      subPackageJSONPaths.push(entry.path);
+    }
+  }
+  subPackageJSONPaths.sort();
 
   interface ScriptEntry {
     name: string;
@@ -90,10 +70,7 @@ export async function findAllPackageJSONScripts(
               ([name, script]): ScriptEntry => ({
                 name,
                 script: String(script),
-                workspace: relative(
-                  dirname(mainPackageJSONPath),
-                  dirname(subPackageJSONPath),
-                ),
+                workspace: relative(rootDir, dirname(subPackageJSONPath)),
               }),
             ),
         ),
@@ -102,7 +79,7 @@ export async function findAllPackageJSONScripts(
   ];
 
   const mainPackageRootFiles = (
-    await Array.fromAsync(Deno.readDir(dirname(mainPackageJSONPath)))
+    await Array.fromAsync(Deno.readDir(rootDir))
   ).map(({ name }): string => name);
   const isPnpm = mainPackageRootFiles.includes("pnpm-lock.yaml");
 
