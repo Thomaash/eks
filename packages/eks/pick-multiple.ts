@@ -9,6 +9,7 @@ import { findAllScripts } from "./find-all-scripts.ts";
  */
 export type PickMultipleOptions = {
   editor: string;
+  skipDirs?: string[];
 };
 
 /**
@@ -27,8 +28,8 @@ export type PickMultipleOptions = {
 export async function pickMultiple(
   options: PickMultipleOptions,
 ): Promise<number> {
-  const { editor } = options;
-  const scripts = await findAllScripts();
+  const { editor, skipDirs = [] } = options;
+  const scripts = await findAllScripts({ skipDirs });
 
   const tempFilePath = await Deno.makeTempFile();
   try {

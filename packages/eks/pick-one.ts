@@ -54,8 +54,10 @@ async function fuzzyPicker(items: string[]): Promise<string | undefined> {
  * Deno.exit(exitCode);
  * ```
  */
-export async function pickOne(): Promise<number> {
-  const scripts = await findAllScripts();
+export async function pickOne(
+  options?: { skipDirs?: string[] },
+): Promise<number> {
+  const scripts = await findAllScripts({ skipDirs: options?.skipDirs ?? [] });
 
   const script = await fuzzyPicker(scripts);
 

@@ -25,14 +25,17 @@ import { findUp } from "./find-up.ts";
  * // ["pnpm run   dev   # nuxt dev", "make   build   # Build the project"]
  * ```
  */
-export async function findAllScripts(): Promise<string[]> {
+export async function findAllScripts(
+  options?: { skipDirs?: string[] },
+): Promise<string[]> {
+  const skipDirs = options?.skipDirs ?? [];
   const commandEntries: CommandEntry[] = [
     ...(await findUp("Makefile").then((path): Promise<CommandEntry[]> | [] =>
       path ? findAllMakefileScripts(path) : [],
     )),
     ...(await findUp("package.json").then(
       (path): Promise<CommandEntry[]> | [] =>
-        path ? findAllPackageJSONScripts(path) : [],
+        path ? findAllPackageJSONScripts(path, skipDirs) : [],
     )),
     ...(await findUp("deno.json").then((path): Promise<CommandEntry[]> | [] =>
       path ? findAllDenoTasks(path) : [],

@@ -12,6 +12,6 @@ setTerminalTitle(
 );
 
 const exitCode = args.multiple
-  ? await pickMultiple({ editor: args.editor })
-  : await pickOne();
+  ? await pickMultiple({ editor: args.editor, skipDirs: args.skipDirs })
+  : await pickOne({ skipDirs: args.skipDirs });
 Deno.exit(exitCode);
