@@ -143,6 +143,39 @@ Deno.test("findAllScripts includes expected commands and descriptions from both 
   });
 });
 
+Deno.test("findAllScripts forwards skipDirs to the package.json walker", async () => {
+  const tempDir = await Deno.makeTempDir();
+  const originalCwd = Deno.cwd();
+  try {
+    await Deno.writeTextFile(
+      `${tempDir}/package.json`,
+      JSON.stringify({ name: "root", scripts: { build: "echo build" } }),
+    );
+    await Deno.mkdir(`${tempDir}/foo`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/foo/package.json`,
+      JSON.stringify({ name: "foo", scripts: { fooscript: "echo foo" } }),
+    );
+
+    Deno.chdir(tempDir);
+    const lines = await findAllScripts({ skipDirs: ["foo"] });
+    const joined = lines.join("\n");
+
+    assert(joined.includes("build"), "root build script should be present");
+    assert(
+      !joined.includes("fooscript"),
+      `scripts under foo/ should be excluded: ${joined}`,
+    );
+    assert(
+      !joined.includes("--filter ./foo"),
+      `foo/ should not appear as a workspace: ${joined}`,
+    );
+  } finally {
+    Deno.chdir(originalCwd);
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
 Deno.test("findAllScripts returns empty array when no Makefile or package.json exists", async () => {
   const tempDir = await Deno.makeTempDir();
   const originalCwd = Deno.cwd();

@@ -150,6 +150,176 @@ Deno.test("findAllPackageJSONScripts prunes node_modules/.cache/.output/dist by 
   }
 });
 
+Deno.test("findAllPackageJSONScripts default skip set excludes .git/node_modules/.pnpm-store/.cache/.output/dist with empty skipDirs", async () => {
+  const tempDir = await Deno.makeTempDir();
+  try {
+    const rootPackageJSONPath = `${tempDir}/package.json`;
+    await Deno.writeTextFile(
+      rootPackageJSONPath,
+      JSON.stringify({ name: "root", scripts: { build: "echo build" } }),
+    );
+
+    const defaultDirs = [
+      ".git",
+      "node_modules",
+      ".pnpm-store",
+      ".cache",
+      ".output",
+      "dist",
+    ];
+    for (const dir of defaultDirs) {
+      await Deno.mkdir(`${tempDir}/${dir}/inner`, { recursive: true });
+      await Deno.writeTextFile(
+        `${tempDir}/${dir}/inner/package.json`,
+        JSON.stringify({ name: dir, scripts: { x: "echo x" } }),
+      );
+    }
+
+    const entries = await findAllPackageJSONScripts(rootPackageJSONPath, []);
+
+    assertEquals(entries.length, 1, "only the root script should be discovered");
+    assertEquals(entries[0].commandParts, ["npm run", "", "build"]);
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("findAllPackageJSONScripts with skipDirs ['foo'] excludes scripts inside foo/", async () => {
+  const tempDir = await Deno.makeTempDir();
+  try {
+    const rootPackageJSONPath = `${tempDir}/package.json`;
+    await Deno.writeTextFile(
+      rootPackageJSONPath,
+      JSON.stringify({ name: "root", scripts: { build: "echo build" } }),
+    );
+
+    await Deno.mkdir(`${tempDir}/foo/inner`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/foo/inner/package.json`,
+      JSON.stringify({ name: "foo-inner", scripts: { f: "echo f" } }),
+    );
+
+    const entries = await findAllPackageJSONScripts(rootPackageJSONPath, [
+      "foo",
+    ]);
+
+    assertEquals(entries.length, 1);
+    assertEquals(entries[0].commandParts, ["npm run", "", "build"]);
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("findAllPackageJSONScripts with skipDirs ['foo[1]'] does not throw and excludes literal foo[1]/", async () => {
+  const tempDir = await Deno.makeTempDir();
+  try {
+    const rootPackageJSONPath = `${tempDir}/package.json`;
+    await Deno.writeTextFile(
+      rootPackageJSONPath,
+      JSON.stringify({ name: "root", scripts: { build: "echo build" } }),
+    );
+
+    await Deno.mkdir(`${tempDir}/foo[1]/inner`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/foo[1]/inner/package.json`,
+      JSON.stringify({ name: "foo1", scripts: { x: "echo x" } }),
+    );
+
+    // A directory named "f" must NOT be excluded by the regex-character-class
+    // interpretation of "foo[1]"; assert it is still walked.
+    await Deno.mkdir(`${tempDir}/f`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/f/package.json`,
+      JSON.stringify({ name: "f", scripts: { y: "echo y" } }),
+    );
+
+    const entries = await findAllPackageJSONScripts(rootPackageJSONPath, [
+      "foo[1]",
+    ]);
+
+    // Root + f/, but NOT foo[1]/inner
+    assertEquals(entries.length, 2);
+    const commands = entries.map((e) => e.commandParts.join(" "));
+    assert(commands.some((c) => c.includes("build")));
+    assert(commands.some((c) => c.includes("--filter ./f")));
+    assert(
+      !commands.some((c) => c.includes("foo[1]")),
+      "scripts under foo[1]/ should be excluded",
+    );
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("findAllPackageJSONScripts with skipDirs ['.cache'] does NOT exclude Xcache/ (literal-only matching)", async () => {
+  const tempDir = await Deno.makeTempDir();
+  try {
+    const rootPackageJSONPath = `${tempDir}/package.json`;
+    await Deno.writeTextFile(
+      rootPackageJSONPath,
+      JSON.stringify({ name: "root", scripts: { build: "echo build" } }),
+    );
+
+    // .cache is a built-in default; Xcache is a different basename and must remain.
+    await Deno.mkdir(`${tempDir}/Xcache`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/Xcache/package.json`,
+      JSON.stringify({ name: "xcache", scripts: { z: "echo z" } }),
+    );
+
+    const entries = await findAllPackageJSONScripts(rootPackageJSONPath, [
+      ".cache",
+    ]);
+
+    assertEquals(entries.length, 2);
+    const commands = entries.map((e) => e.commandParts.join(" "));
+    assert(commands.some((c) => c.includes("--filter ./Xcache")));
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("findAllPackageJSONScripts with skipDirs ['.idea'] excludes .idea/x/ while keeping defaults excluded", async () => {
+  const tempDir = await Deno.makeTempDir();
+  try {
+    const rootPackageJSONPath = `${tempDir}/package.json`;
+    await Deno.writeTextFile(
+      rootPackageJSONPath,
+      JSON.stringify({ name: "root", scripts: { build: "echo build" } }),
+    );
+
+    await Deno.mkdir(`${tempDir}/.idea/x`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/.idea/x/package.json`,
+      JSON.stringify({ name: "idea-x", scripts: { i: "echo i" } }),
+    );
+
+    await Deno.mkdir(`${tempDir}/node_modules/y`, { recursive: true });
+    await Deno.writeTextFile(
+      `${tempDir}/node_modules/y/package.json`,
+      JSON.stringify({ name: "nm-y", scripts: { n: "echo n" } }),
+    );
+
+    const entries = await findAllPackageJSONScripts(rootPackageJSONPath, [
+      ".idea",
+    ]);
+
+    assertEquals(entries.length, 1, "only root script remains");
+    assertEquals(entries[0].commandParts, ["npm run", "", "build"]);
+    const commands = entries.map((e) => e.commandParts.join(" "));
+    assert(
+      !commands.some((c) => c.includes(".idea")),
+      "scripts under .idea/ should be excluded",
+    );
+    assert(
+      !commands.some((c) => c.includes("node_modules")),
+      "scripts under node_modules/ should remain excluded by defaults",
+    );
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
 Deno.test("findAllPackageJSONScripts detects npm in mixed fixture with Makefile present", async () => {
   const packageJSONPath = `${fixturesDir}/mixed/package.json`;
 

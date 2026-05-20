@@ -50,10 +50,51 @@ Deno.test("parseEksArgs: --multiple sets multiple to true", () => {
   assertEquals(args.multiple, true);
 });
 
+Deno.test("parseEksArgs: defaults skipDirs to [] when no flag and no env", () => {
+  const args = parseEksArgs([], envOf({}));
+  assertEquals(args.skipDirs, []);
+});
+
+Deno.test("parseEksArgs: --skip-dir is repeatable and preserves order", () => {
+  const args = parseEksArgs(
+    ["--skip-dir", ".idea", "--skip-dir", "tmp"],
+    envOf({}),
+  );
+  assertEquals(args.skipDirs, [".idea", "tmp"]);
+});
+
+Deno.test("parseEksArgs: --skip-dir value containing ':' is treated as a literal", () => {
+  const args = parseEksArgs(["--skip-dir", "foo:bar"], envOf({}));
+  assertEquals(args.skipDirs, ["foo:bar"]);
+});
+
+Deno.test("parseEksArgs: --skip-dir with empty value is filtered out", () => {
+  const args = parseEksArgs(["--skip-dir", ""], envOf({}));
+  assertEquals(args.skipDirs, []);
+});
+
+Deno.test("parseEksArgs: EKS_SKIP_DIRS is parsed as colon-delimited list", () => {
+  const args = parseEksArgs([], envOf({ EKS_SKIP_DIRS: ".idea:.venv" }));
+  assertEquals(args.skipDirs, [".idea", ".venv"]);
+});
+
+Deno.test("parseEksArgs: EKS_SKIP_DIRS drops empty segments from leading/trailing/repeated colons", () => {
+  const args = parseEksArgs([], envOf({ EKS_SKIP_DIRS: "::foo::bar:" }));
+  assertEquals(args.skipDirs, ["foo", "bar"]);
+});
+
+Deno.test("parseEksArgs: --skip-dir and EKS_SKIP_DIRS compose additively with flag-values first then env-values", () => {
+  const args = parseEksArgs(
+    ["--skip-dir", "a"],
+    envOf({ EKS_SKIP_DIRS: "b" }),
+  );
+  assertEquals(args.skipDirs, ["a", "b"]);
+});
+
 Deno.test("parseEksArgs: --multiple and --editor coexist", () => {
   const args = parseEksArgs(
     ["--multiple", "--editor", "nvim"],
     envOf({}),
   );
-  assertEquals(args, { multiple: true, editor: "nvim" });
+  assertEquals(args, { multiple: true, editor: "nvim", skipDirs: [] });
 });
