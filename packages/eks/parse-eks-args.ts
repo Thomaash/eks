@@ -9,7 +9,7 @@ import { parseArgs } from "@std/cli/parse-args";
  *   then `nano`. Treated as a single executable, not a shell command string.
  * @property skipDirs - Additive union of `--skip-dir` flag values (collected in order)
  *   and `EKS_SKIP_DIRS` env-var segments (PATH-style, colon-delimited), with empty
- *   and whitespace-only entries discarded. Order is flag-first, env-second. Built-in
+ *   entries discarded. Order is flag-first, env-second. Built-in
  *   defaults like `.git` and `node_modules` are applied separately inside the walker;
  *   this field holds only user-supplied extras.
  */
@@ -60,5 +60,5 @@ export function parseEksArgs(
 }
 
 function normalizeSkipDirs(values: string[]): string[] {
-  return values.map((v) => v.trim()).filter((v) => v !== "");
+  return values.filter((v) => v !== "");
 }
