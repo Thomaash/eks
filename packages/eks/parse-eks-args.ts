@@ -46,7 +46,7 @@ export function parseEksArgs(
     },
   });
 
-  const flagSkipDirs = normalizeSkipDirs(parsed["skip-dir"] as string[]);
+  const flagSkipDirs = normalizeSkipDirs(parsed["skip-dir"]);
   const envSkipDirs = normalizeSkipDirs(
     (env.get("EKS_SKIP_DIRS") ?? "").split(":"),
   );
