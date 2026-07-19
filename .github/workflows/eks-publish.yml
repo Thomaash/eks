@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - 'packages/eks/**'
-      - '.github/workflows/eks-publish.yml'
+      - "packages/eks/**"
+      - ".github/workflows/eks-publish.yml"
 
 permissions:
   id-token: write
