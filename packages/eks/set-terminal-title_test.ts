@@ -43,7 +43,11 @@ Deno.test("setTerminalTitle writes correct bytes for empty title string", () => 
   const actualBytes = captureStdoutWrite(() => setTerminalTitle(""));
 
   assertEquals(actualBytes[0], 0x1b, "first byte should be ESC (0x1b)");
-  assertEquals(actualBytes[actualBytes.length - 1], 0x07, "last byte should be BEL (0x07)");
+  assertEquals(
+    actualBytes[actualBytes.length - 1],
+    0x07,
+    "last byte should be BEL (0x07)",
+  );
   assertEquals(
     actualBytes,
     expectedTitleBytes(""),

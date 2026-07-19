@@ -249,7 +249,9 @@ Deno.test("findAllDenoTasks: non-workspace config returns only the file's own ta
     assertEquals(
       entry.commandParts[1],
       "",
-      `non-workspace config should not produce --cwd entries, but got: ${entry.commandParts.join(" ")}`,
+      `non-workspace config should not produce --cwd entries, but got: ${
+        entry.commandParts.join(" ")
+      }`,
     );
   }
   assertEquals(entries.length, 3, "deno-only fixture has exactly 3 tasks");
