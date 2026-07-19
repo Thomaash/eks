@@ -1,7 +1,9 @@
 import { assertEquals } from "@std/assert";
 import { parseEksArgs } from "./parse-eks-args.ts";
 
-function envOf(values: Record<string, string | undefined>): Pick<typeof Deno.env, "get"> {
+function envOf(
+  values: Record<string, string | undefined>,
+): Pick<typeof Deno.env, "get"> {
   return {
     get(key: string): string | undefined {
       return values[key];

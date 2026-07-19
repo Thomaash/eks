@@ -34,7 +34,11 @@ Deno.test("findAllScripts combines Makefile, package.json, and Deno task sources
     assertEquals(denoEntries.length, 2, "should have 2 Deno task entries");
 
     for (const line of lines) {
-      assertEquals(line.includes("#"), true, `each line should contain '#' separator: ${line}`);
+      assertEquals(
+        line.includes("#"),
+        true,
+        `each line should contain '#' separator: ${line}`,
+      );
     }
   });
 });
@@ -90,7 +94,9 @@ Deno.test("findAllScripts in a deno-only fixture returns only Deno task entries"
       assertEquals(
         separatorPositions[i],
         firstPosition,
-        `all deno-only lines should align on '#', line ${i} at ${separatorPositions[i]} vs ${firstPosition}`,
+        `all deno-only lines should align on '#', line ${i} at ${
+          separatorPositions[i]
+        } vs ${firstPosition}`,
       );
     }
   });
@@ -107,7 +113,9 @@ Deno.test("findAllScripts produces lines with consistent column alignment", asyn
       assertEquals(
         separatorPositions[i],
         firstPosition,
-        `all lines should have '#' at the same column position, but line ${i} has it at ${separatorPositions[i]} instead of ${firstPosition}`,
+        `all lines should have '#' at the same column position, but line ${i} has it at ${
+          separatorPositions[i]
+        } instead of ${firstPosition}`,
       );
     }
   });
@@ -118,7 +126,17 @@ Deno.test("findAllScripts includes expected commands and descriptions from both 
     const lines = await findAllScripts();
     const joinedOutput = lines.join("\n");
 
-    const expectedCommands = ["make", "build", "test", "npm run", "dev", "format", "deno task", "check", "bench"];
+    const expectedCommands = [
+      "make",
+      "build",
+      "test",
+      "npm run",
+      "dev",
+      "format",
+      "deno task",
+      "check",
+      "bench",
+    ];
     for (const command of expectedCommands) {
       assertEquals(
         joinedOutput.includes(command),
@@ -182,7 +200,11 @@ Deno.test("findAllScripts returns empty array when no Makefile or package.json e
   try {
     Deno.chdir(tempDir);
     const lines = await findAllScripts();
-    assertEquals(lines, [], "should return empty array when no config files found");
+    assertEquals(
+      lines,
+      [],
+      "should return empty array when no config files found",
+    );
   } finally {
     Deno.chdir(originalCwd);
     await Deno.remove(tempDir, { recursive: true });
@@ -212,8 +234,14 @@ Deno.test("findAllScripts uses triple-space as the column separator between all 
       const commandSide = line.slice(0, hashIndex);
       const descriptionSide = line.slice(hashIndex + 1);
       // The # should be preceded and followed by exactly 3 spaces
-      assert(commandSide.endsWith("   "), `command side should end with triple space: "${commandSide}"`);
-      assert(descriptionSide.startsWith("   "), `description side should start with triple space: "${descriptionSide}"`);
+      assert(
+        commandSide.endsWith("   "),
+        `command side should end with triple space: "${commandSide}"`,
+      );
+      assert(
+        descriptionSide.startsWith("   "),
+        `description side should start with triple space: "${descriptionSide}"`,
+      );
     }
   });
 });
@@ -228,7 +256,9 @@ Deno.test("findAllScripts produces lines of equal total length", async () => {
       assertEquals(
         lineLengths[i],
         expectedLength,
-        `all lines should have equal length ${expectedLength}, but line ${i} has length ${lineLengths[i]}`,
+        `all lines should have equal length ${expectedLength}, but line ${i} has length ${
+          lineLengths[i]
+        }`,
       );
     }
   });
@@ -305,7 +335,9 @@ Deno.test("findAllScripts in deno-workspace aligns '#' across root and member en
       assertEquals(
         separatorPositions[i],
         firstPosition,
-        `all deno-workspace lines should align on '#', line ${i} at ${separatorPositions[i]} vs ${firstPosition}`,
+        `all deno-workspace lines should align on '#', line ${i} at ${
+          separatorPositions[i]
+        } vs ${firstPosition}`,
       );
     }
 
@@ -315,7 +347,9 @@ Deno.test("findAllScripts in deno-workspace aligns '#' across root and member en
       assertEquals(
         lineLengths[i],
         expectedLength,
-        `all deno-workspace lines should have equal length ${expectedLength}, but line ${i} has length ${lineLengths[i]}`,
+        `all deno-workspace lines should have equal length ${expectedLength}, but line ${i} has length ${
+          lineLengths[i]
+        }`,
       );
     }
   });

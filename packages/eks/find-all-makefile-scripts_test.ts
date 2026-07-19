@@ -63,9 +63,17 @@ Deno.test("findAllMakefileScripts returns empty description for target on first 
 
   assertEquals(entries.length, 2, "should find 2 targets");
   assertEquals(entries[0].commandParts[2], "build");
-  assertEquals(entries[0].descriptionParts, [""], "target on first line should have empty description");
+  assertEquals(
+    entries[0].descriptionParts,
+    [""],
+    "target on first line should have empty description",
+  );
   assertEquals(entries[1].commandParts[2], "test");
-  assertEquals(entries[1].descriptionParts, ["With a comment"], "target preceded by comment should have that description");
+  assertEquals(
+    entries[1].descriptionParts,
+    ["With a comment"],
+    "target preceded by comment should have that description",
+  );
 });
 
 Deno.test("findAllMakefileScripts joins multi-line comments with pipe separator", async () => {
@@ -88,19 +96,30 @@ Deno.test("findAllMakefileScripts extracts description from comment on the very 
 
   assertEquals(entries.length, 1, "should find exactly 1 target");
   assertEquals(entries[0].commandParts, ["make", "", "build"]);
-  assertEquals(entries[0].descriptionParts, ["Build everything"], "comment at line 0 should be used as description");
+  assertEquals(
+    entries[0].descriptionParts,
+    ["Build everything"],
+    "comment at line 0 should be used as description",
+  );
 });
 
 Deno.test("findAllMakefileScripts returns empty description when a non-comment line precedes the target", async () => {
   const tempDir = await Deno.makeTempDir();
   try {
     const makefilePath = `${tempDir}/Makefile`;
-    await Deno.writeTextFile(makefilePath, "SOME_VAR=value\nbuild:\n\t@echo done\n");
+    await Deno.writeTextFile(
+      makefilePath,
+      "SOME_VAR=value\nbuild:\n\t@echo done\n",
+    );
 
     const entries = await findAllMakefileScripts(makefilePath);
 
     assertEquals(entries.length, 1);
-    assertEquals(entries[0].descriptionParts, [""], "non-comment line above target should yield empty description");
+    assertEquals(
+      entries[0].descriptionParts,
+      [""],
+      "non-comment line above target should yield empty description",
+    );
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }
@@ -110,7 +129,10 @@ Deno.test("findAllMakefileScripts strips hash prefixes with varying counts and w
   const tempDir = await Deno.makeTempDir();
   try {
     const makefilePath = `${tempDir}/Makefile`;
-    await Deno.writeTextFile(makefilePath, "## Double hash with space\n### Triple hash\nbuild:\n\t@echo done\n");
+    await Deno.writeTextFile(
+      makefilePath,
+      "## Double hash with space\n### Triple hash\nbuild:\n\t@echo done\n",
+    );
 
     const entries = await findAllMakefileScripts(makefilePath);
 

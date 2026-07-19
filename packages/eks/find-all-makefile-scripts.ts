@@ -26,10 +26,9 @@ function getDescriptionFromPrecedingLines(
     return "";
   }
 
-  const firstCommentLineIndex =
-    lines
-      .slice(0, lastCommentLineIndex + 1)
-      .findLastIndex((line): boolean => !line.startsWith("#")) + 1;
+  const firstCommentLineIndex = lines
+    .slice(0, lastCommentLineIndex + 1)
+    .findLastIndex((line): boolean => !line.startsWith("#")) + 1;
 
   return lines
     .slice(firstCommentLineIndex, lastCommentLineIndex + 1)

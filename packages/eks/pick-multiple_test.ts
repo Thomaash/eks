@@ -5,7 +5,9 @@ import { pickMultiple } from "./pick-multiple.ts";
  * Captures argv passed to a fake editor by writing it to a probe file.
  * Returns the path of the editor script and the probe file.
  */
-async function makeArgvProbe(): Promise<{ editor: string; probe: string; cleanup: () => Promise<void> }> {
+async function makeArgvProbe(): Promise<
+  { editor: string; probe: string; cleanup: () => Promise<void> }
+> {
   const dir = await Deno.makeTempDir();
   const probe = `${dir}/probe.txt`;
   const editor = `${dir}/fake-editor.sh`;
@@ -47,7 +49,11 @@ Deno.test("pickMultiple invokes the resolved editor with the temp script file pa
       assertEquals(exitCode, 0, "fake editor should exit cleanly");
 
       const captured = (await Deno.readTextFile(probe)).trim().split("\n");
-      assertEquals(captured.length, 1, `expected exactly one argv entry, got: ${captured.join(", ")}`);
+      assertEquals(
+        captured.length,
+        1,
+        `expected exactly one argv entry, got: ${captured.join(", ")}`,
+      );
       assert(
         captured[0].length > 0 && captured[0].includes("/"),
         `argv[0] should be the absolute temp file path, got: ${captured[0]}`,

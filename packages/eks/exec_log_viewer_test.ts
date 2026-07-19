@@ -1,4 +1,9 @@
-import { assert, assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+} from "@std/assert";
 import { join } from "@std/path";
 import { execEkssScripts } from "./exec.ts";
 
@@ -32,7 +37,10 @@ Deno.test("execEkssScripts opens failure logs with the resolved editor", async (
     assertStringIncludes(error.message, "Command failed");
 
     const captured = (await Deno.readTextFile(probe)).trim().split("\n");
-    assert(captured.length >= 1, "editor should have been invoked with at least one log path");
+    assert(
+      captured.length >= 1,
+      "editor should have been invoked with at least one log path",
+    );
     for (const path of captured) {
       assert(
         path.endsWith(".stdout.log") || path.endsWith(".stderr.log"),
@@ -81,5 +89,9 @@ Deno.test("execEkssScripts cleans up its temp dir even when editor launch fails"
     .filter((e) => e.isDirectory)
     .map((e) => e.name);
   const leaked = dirsAfter.filter((d) => !dirsBefore.has(d));
-  assertEquals(leaked.length, 0, `should not leak temp dirs when editor launch fails: ${leaked.join(", ")}`);
+  assertEquals(
+    leaked.length,
+    0,
+    `should not leak temp dirs when editor launch fails: ${leaked.join(", ")}`,
+  );
 });

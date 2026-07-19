@@ -1,6 +1,6 @@
 export default defineNuxtConfig({
   app: {
-    baseURL: '/eks/',
+    baseURL: "/eks/",
   },
   modules: ["@nuxt/content"],
   content: {

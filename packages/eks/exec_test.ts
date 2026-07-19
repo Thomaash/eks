@@ -1,11 +1,20 @@
-import { assert, assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+} from "@std/assert";
 import { join } from "@std/path";
 import { execEkssScripts } from "./exec.ts";
 
 Deno.test("execEkssScripts is exported as a function from exec.ts", async () => {
   const mod = await import("./exec.ts");
   const exports = mod as Record<string, unknown>;
-  assertEquals(typeof exports["execEkssScripts"], "function", "execEkssScripts should be exported as a function");
+  assertEquals(
+    typeof exports["execEkssScripts"],
+    "function",
+    "execEkssScripts should be exported as a function",
+  );
 });
 
 async function withTempDir<T>(fn: (tempDir: string) => Promise<T>): Promise<T> {
@@ -41,7 +50,9 @@ Deno.test("execEkssScripts logs [PLAN], [EXEC], [OKAY], and [DONE] markers for s
     const scriptFile = join(tempDir, "log_test.sh");
     await Deno.writeTextFile(scriptFile, "echo hello\n");
 
-    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }));
+    const logs = await captureConsoleInfo(() =>
+      execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" })
+    );
     const tags = logs.map((args) => args[0]);
 
     assert(tags.includes("[PLAN]"), "should log [PLAN]");
@@ -108,7 +119,10 @@ Deno.test("execEkssScripts skips comment lines starting with '#' and executes on
 
     await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
-    assert(await fileExists(markerFile), "marker file should exist after non-comment command executes");
+    assert(
+      await fileExists(markerFile),
+      "marker file should exist after non-comment command executes",
+    );
   });
 });
 
@@ -123,7 +137,10 @@ Deno.test("execEkssScripts strips inline comments after commands", async () => {
 
     await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
-    assert(await fileExists(markerFile), "command before inline # should still execute");
+    assert(
+      await fileExists(markerFile),
+      "command before inline # should still execute",
+    );
   });
 });
 
@@ -139,7 +156,11 @@ Deno.test("execEkssScripts prefixes commands with LC_ALL=en_US.UTF-8", async () 
     await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
     const content = (await Deno.readTextFile(outputFile)).trim();
-    assertEquals(content, "en_US.UTF-8", "LC_ALL should be set by command prefix");
+    assertEquals(
+      content,
+      "en_US.UTF-8",
+      "LC_ALL should be set by command prefix",
+    );
   });
 });
 
@@ -154,7 +175,10 @@ Deno.test("execEkssScripts trims leading whitespace from script lines", async ()
 
     await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
-    assert(await fileExists(markerFile), "indented command should still execute after trimming");
+    assert(
+      await fileExists(markerFile),
+      "indented command should still execute after trimming",
+    );
   });
 });
 
@@ -182,7 +206,10 @@ Deno.test("execEkssScripts handles script content with leading and trailing blan
 
     await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
-    assert(await fileExists(markerFile), "command should execute despite surrounding blank lines");
+    assert(
+      await fileExists(markerFile),
+      "command should execute despite surrounding blank lines",
+    );
   });
 });
 
@@ -194,7 +221,10 @@ Deno.test("execEkssScripts executes a command that ends with a hash character", 
 
     await execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" });
 
-    assert(await fileExists(markerFile), "command ending with # should still execute");
+    assert(
+      await fileExists(markerFile),
+      "command ending with # should still execute",
+    );
   });
 });
 
@@ -204,7 +234,9 @@ Deno.test("execEkssScripts groups concurrent commands in a single batch in PLAN 
     // Two commands with no blank line between them = one batch
     await Deno.writeTextFile(scriptFile, `echo one\necho two\n`);
 
-    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }));
+    const logs = await captureConsoleInfo(() =>
+      execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" })
+    );
 
     // Count batches: each batch execution is followed by an empty log line
     // For a single batch of 2 commands: [PLAN], "", [EXEC]x2, [OKAY]x2, "", [DONE], ""
@@ -214,8 +246,14 @@ Deno.test("execEkssScripts groups concurrent commands in a single batch in PLAN 
 
     // With single batch: 3 empty lines (after PLAN, after batch, after DONE)
     // With split into 2 batches: 4 empty lines (after PLAN, after batch1, after batch2, after DONE)
-    const emptyLogs = logs.filter((args) => args.length === 1 && args[0] === "");
-    assertEquals(emptyLogs.length, 3, "single batch should produce 3 empty lines, not 4");
+    const emptyLogs = logs.filter((args) =>
+      args.length === 1 && args[0] === ""
+    );
+    assertEquals(
+      emptyLogs.length,
+      3,
+      "single batch should produce 3 empty lines, not 4",
+    );
   });
 });
 
@@ -224,9 +262,17 @@ Deno.test("execEkssScripts logs exactly 3 empty lines: after plan, after batch, 
     const scriptFile = join(tempDir, "spacing.sh");
     await Deno.writeTextFile(scriptFile, `echo hello\n`);
 
-    const logs = await captureConsoleInfo(() => execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" }));
-    const emptyLogs = logs.filter((args) => args.length === 1 && args[0] === "");
-    assertEquals(emptyLogs.length, 3, `should have exactly 3 empty spacing lines, got ${emptyLogs.length}`);
+    const logs = await captureConsoleInfo(() =>
+      execEkssScripts(tempDir, scriptFile, { editor: "/bin/true" })
+    );
+    const emptyLogs = logs.filter((args) =>
+      args.length === 1 && args[0] === ""
+    );
+    assertEquals(
+      emptyLogs.length,
+      3,
+      `should have exactly 3 empty spacing lines, got ${emptyLogs.length}`,
+    );
   });
 });
 
@@ -248,7 +294,11 @@ Deno.test("execEkssScripts cleans up its internal temporary directory after succ
     .filter((e) => e.isDirectory)
     .map((e) => e.name);
   const leaked = dirsAfter.filter((d) => !dirsBefore.has(d));
-  assertEquals(leaked.length, 0, `should not leak temp directories, but found: ${leaked.join(", ")}`);
+  assertEquals(
+    leaked.length,
+    0,
+    `should not leak temp directories, but found: ${leaked.join(", ")}`,
+  );
 });
 
 Deno.test("execEkssScripts cleans up its internal temporary directory after failed execution", async () => {
@@ -273,13 +323,22 @@ Deno.test("execEkssScripts cleans up its internal temporary directory after fail
     .filter((e) => e.isDirectory)
     .map((e) => e.name);
   const leaked = dirsAfter.filter((d) => !dirsBefore.has(d));
-  assertEquals(leaked.length, 0, `should not leak temp directories on failure, but found: ${leaked.join(", ")}`);
+  assertEquals(
+    leaked.length,
+    0,
+    `should not leak temp directories on failure, but found: ${
+      leaked.join(", ")
+    }`,
+  );
 });
 
 Deno.test("execEkssScripts writes .stdout.log and .stderr.log files on command failure", async () => {
   await withTempDir(async (tempDir) => {
     const scriptFile = join(tempDir, "fail_logs.sh");
-    await Deno.writeTextFile(scriptFile, `echo out_content; echo err_content >&2; exit 1\n`);
+    await Deno.writeTextFile(
+      scriptFile,
+      `echo out_content; echo err_content >&2; exit 1\n`,
+    );
 
     // Patch Deno.makeTempDir to capture the internal temp dir path
     const originalMakeTempDir = Deno.makeTempDir;
@@ -314,28 +373,52 @@ Deno.test("execEkssScripts writes .stdout.log and .stderr.log files on command f
       Deno.remove = originalRemove;
     }
 
-    assert(internalTempDir !== "", "should have captured internal temp dir path");
-    assert(removedPaths.includes(internalTempDir), "should attempt to remove the temp dir");
+    assert(
+      internalTempDir !== "",
+      "should have captured internal temp dir path",
+    );
+    assert(
+      removedPaths.includes(internalTempDir),
+      "should attempt to remove the temp dir",
+    );
 
     // Check log files exist with correct names
     const logFiles = Array.from(Deno.readDirSync(internalTempDir))
       .map((e) => e.name)
       .sort();
-    assert(logFiles.some((f) => f.endsWith(".stdout.log")), `should have .stdout.log file, got: ${logFiles}`);
-    assert(logFiles.some((f) => f.endsWith(".stderr.log")), `should have .stderr.log file, got: ${logFiles}`);
+    assert(
+      logFiles.some((f) => f.endsWith(".stdout.log")),
+      `should have .stdout.log file, got: ${logFiles}`,
+    );
+    assert(
+      logFiles.some((f) => f.endsWith(".stderr.log")),
+      `should have .stderr.log file, got: ${logFiles}`,
+    );
 
     // Check content format: "command\n\noutput"
     const stdoutLog = await Deno.readTextFile(
       join(internalTempDir, logFiles.find((f) => f.endsWith(".stdout.log"))!),
     );
-    assert(stdoutLog.includes("\n\n"), "stdout log should contain command\\n\\noutput format");
-    assert(stdoutLog.includes("out_content"), "stdout log should contain command output");
+    assert(
+      stdoutLog.includes("\n\n"),
+      "stdout log should contain command\\n\\noutput format",
+    );
+    assert(
+      stdoutLog.includes("out_content"),
+      "stdout log should contain command output",
+    );
 
     const stderrLog = await Deno.readTextFile(
       join(internalTempDir, logFiles.find((f) => f.endsWith(".stderr.log"))!),
     );
-    assert(stderrLog.includes("\n\n"), "stderr log should contain command\\n\\noutput format");
-    assert(stderrLog.includes("err_content"), "stderr log should contain stderr output");
+    assert(
+      stderrLog.includes("\n\n"),
+      "stderr log should contain command\\n\\noutput format",
+    );
+    assert(
+      stderrLog.includes("err_content"),
+      "stderr log should contain stderr output",
+    );
 
     // Clean up manually
     await originalRemove(internalTempDir, { recursive: true });

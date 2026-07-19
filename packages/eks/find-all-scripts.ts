@@ -31,17 +31,17 @@ export async function findAllScripts(
   const skipDirs = options?.skipDirs ?? [];
   const commandEntries: CommandEntry[] = [
     ...(await findUp("Makefile").then((path): Promise<CommandEntry[]> | [] =>
-      path ? findAllMakefileScripts(path) : [],
+      path ? findAllMakefileScripts(path) : []
     )),
     ...(await findUp("package.json").then(
       (path): Promise<CommandEntry[]> | [] =>
         path ? findAllPackageJSONScripts(path, skipDirs) : [],
     )),
     ...(await findUp("deno.json").then((path): Promise<CommandEntry[]> | [] =>
-      path ? findAllDenoTasks(path) : [],
+      path ? findAllDenoTasks(path) : []
     )),
     ...(await findUp("deno.jsonc").then((path): Promise<CommandEntry[]> | [] =>
-      path ? findAllDenoTasks(path) : [],
+      path ? findAllDenoTasks(path) : []
     )),
   ];
 
@@ -58,12 +58,12 @@ export async function findAllScripts(
     command: commandEntries[0].commandParts.map((_, index): number =>
       Math.max(
         ...commandEntries.map((entry) => entry.commandParts[index].length),
-      ),
+      )
     ),
     description: commandEntries[0].descriptionParts.map((_, index): number =>
       Math.max(
         ...commandEntries.map((entry) => entry.descriptionParts[index].length),
-      ),
+      )
     ),
   };
 
@@ -73,11 +73,11 @@ export async function findAllScripts(
   }: CommandEntry): string =>
     [
       ...commandParts.map((part, column): string =>
-        part.padEnd(maxLengths.command[column]),
+        part.padEnd(maxLengths.command[column])
       ),
       "#",
       ...descriptionParts.map((part, column): string =>
-        part.padEnd(maxLengths.description[column]),
+        part.padEnd(maxLengths.description[column])
       ),
     ].join("   ");
 

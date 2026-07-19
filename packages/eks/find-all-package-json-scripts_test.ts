@@ -177,7 +177,11 @@ Deno.test("findAllPackageJSONScripts default skip set excludes .git/node_modules
 
     const entries = await findAllPackageJSONScripts(rootPackageJSONPath, []);
 
-    assertEquals(entries.length, 1, "only the root script should be discovered");
+    assertEquals(
+      entries.length,
+      1,
+      "only the root script should be discovered",
+    );
     assertEquals(entries[0].commandParts, ["npm run", "", "build"]);
   } finally {
     await Deno.remove(tempDir, { recursive: true });

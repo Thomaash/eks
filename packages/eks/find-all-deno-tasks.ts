@@ -59,9 +59,12 @@ export async function findAllDenoTasks(
             if (!(await exists(candidate, { isFile: true }))) {
               return [];
             }
-            return tasksToEntries(await readDenoConfig(candidate), `--cwd ${member}`);
+            return tasksToEntries(
+              await readDenoConfig(candidate),
+              `--cwd ${member}`,
+            );
           },
-        ),
+        )
       ),
     )
   ).flat(1);
