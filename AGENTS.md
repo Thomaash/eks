@@ -8,4 +8,14 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) with scopes:
 <type>(<scope>): <description>
 ```
 
-Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `ci`, `style`, `perf`, `build`.
+Types:
+- `feat`
+- `fix`
+- `refactor`
+- `docs`
+- `test`
+- `chore`
+- `ci`
+- `style`
+- `perf`
+- `build`
