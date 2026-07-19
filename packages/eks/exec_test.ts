@@ -292,12 +292,15 @@ Deno.test("execEkssScripts writes .stdout.log and .stderr.log files on command f
     // Patch Deno.remove to prevent cleanup so we can inspect logs
     const originalRemove = Deno.remove;
     const removedPaths: string[] = [];
-    Deno.remove = async (path: string | URL, options?: Deno.RemoveOptions) => {
+    Deno.remove = (
+      path: string | URL,
+      options?: Deno.RemoveOptions,
+    ): Promise<void> => {
       const pathStr = path.toString();
       if (pathStr === internalTempDir) {
         removedPaths.push(pathStr);
         // Don't actually remove — we want to inspect the files
-        return;
+        return Promise.resolve();
       }
       return originalRemove(path, options);
     };
