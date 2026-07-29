@@ -12,7 +12,7 @@
     "jsr:@std/jsonc@1.0.2": "1.0.2",
     "jsr:@std/path@1.1.4": "1.1.4",
     "jsr:@std/path@^1.1.4": "1.1.4",
-    "npm:@inquirer/prompts@8.4.3": "8.4.3",
+    "npm:@inquirer/prompts@8.5.2": "8.5.2",
     "npm:@nuxt/content@3.14.0": "3.14.0_vite@7.3.6__jiti@2.7.0__yaml@2.9.0",
     "npm:fzf@0.5.2": "0.5.2",
     "npm:nuxt@4.4.6": "4.4.6_vite@7.3.6__jiti@2.7.0__yaml@2.9.0"
@@ -567,8 +567,8 @@
         "@inquirer/type"
       ]
     },
-    "@inquirer/prompts@8.4.3": {
-      "integrity": "sha512-ai5LseTw9HhegupIgmo4cn7RpnCGznjjXu4OI+7jMR8vu7T1ZCCNMzFFAovUCjL1fl0cceksIN1++yQE59SmZw==",
+    "@inquirer/prompts@8.5.2": {
+      "integrity": "sha512-IYR/3C/paEVVQYQvdDlFZVjRCJVYHHON0XXMH91KO9GSxs0TdKYWlUdvfQl2EfAHDxUaN3IBffkE/BDTh5nJ6g==",
       "dependencies": [
         "@inquirer/checkbox",
         "@inquirer/confirm",
@@ -6107,7 +6107,7 @@
           "jsr:@std/internal@1.0.13",
           "jsr:@std/jsonc@1.0.2",
           "jsr:@std/path@1.1.4",
-          "npm:@inquirer/prompts@8.4.3",
+          "npm:@inquirer/prompts@8.5.2",
           "npm:fzf@0.5.2"
         ]
       }
