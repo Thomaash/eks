@@ -6,7 +6,7 @@
     "generate": "deno run -A npm:nuxt generate"
   },
   "imports": {
-    "@nuxt/content": "npm:@nuxt/content@3.14.0",
+    "@nuxt/content": "npm:@nuxt/content@3.15.2",
     "@std/assert": "jsr:@std/assert@1.0.19",
     "@std/fs": "jsr:@std/fs@1.0.24",
     "@std/path": "jsr:@std/path@1.1.6",
