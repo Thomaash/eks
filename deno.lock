@@ -5,7 +5,7 @@
     "jsr:@std/cli@1.0.32": "1.0.32",
     "jsr:@std/fmt@^1.0.10": "1.0.10",
     "jsr:@std/fs@1.0.24": "1.0.24",
-    "jsr:@std/internal@1.0.13": "1.0.13",
+    "jsr:@std/internal@1.0.14": "1.0.14",
     "jsr:@std/internal@^1.0.12": "1.0.14",
     "jsr:@std/internal@^1.0.14": "1.0.14",
     "jsr:@std/json@^1.0.2": "1.1.0",
@@ -40,9 +40,6 @@
         "jsr:@std/internal@^1.0.14",
         "jsr:@std/path@^1.1.5"
       ]
-    },
-    "@std/internal@1.0.13": {
-      "integrity": "2f9546691d4ac2d32859c82dff284aaeac980ddeca38430d07941e7e288725c0"
     },
     "@std/internal@1.0.14": {
       "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
@@ -746,8 +743,6 @@
     "@napi-rs/wasm-runtime@1.1.6_@emnapi+core@1.11.1_@emnapi+runtime@1.11.1": {
       "integrity": "sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==",
       "dependencies": [
-        "@emnapi/core@1.11.1",
-        "@emnapi/runtime@1.11.1",
         "@tybys/wasm-util"
       ]
     },
@@ -6335,7 +6330,7 @@
           "jsr:@std/assert@1.0.19",
           "jsr:@std/cli@1.0.32",
           "jsr:@std/fs@1.0.24",
-          "jsr:@std/internal@1.0.13",
+          "jsr:@std/internal@1.0.14",
           "jsr:@std/jsonc@1.0.2",
           "jsr:@std/path@1.1.4",
           "npm:@inquirer/prompts@8.5.2",
