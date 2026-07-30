@@ -10,7 +10,7 @@
     "jsr:@std/internal@^1.0.14": "1.0.14",
     "jsr:@std/json@^1.0.2": "1.1.0",
     "jsr:@std/jsonc@1.0.2": "1.0.2",
-    "jsr:@std/path@1.1.4": "1.1.4",
+    "jsr:@std/path@1.1.6": "1.1.6",
     "jsr:@std/path@^1.1.5": "1.1.6",
     "npm:@inquirer/prompts@8.5.2": "8.5.2",
     "npm:@nuxt/content@3.14.0": "3.14.0_valibot@1.4.2_vite@8.1.5__esbuild@0.28.1__jiti@2.7.0",
@@ -54,12 +54,6 @@
       "integrity": "909605dae3af22bd75b1cbda8d64a32cf1fd2cf6efa3f9e224aba6d22c0f44c7",
       "dependencies": [
         "jsr:@std/json"
-      ]
-    },
-    "@std/path@1.1.4": {
-      "integrity": "1d2d43f39efb1b42f0b1882a25486647cb851481862dc7313390b2bb044314b5",
-      "dependencies": [
-        "jsr:@std/internal@^1.0.12"
       ]
     },
     "@std/path@1.1.6": {
@@ -746,8 +740,6 @@
     "@napi-rs/wasm-runtime@1.1.6_@emnapi+core@1.11.1_@emnapi+runtime@1.11.1": {
       "integrity": "sha512-ZLv/JdUfkvOy9eCnnBaGfiO+XimbjebAeO+MRQqD/B+FR1tnRN0tpKSJHRbE8sFfS6aqsXZ67TQjfwfsxULVbg==",
       "dependencies": [
-        "@emnapi/core@1.11.1",
-        "@emnapi/runtime@1.11.1",
         "@tybys/wasm-util"
       ]
     },
@@ -6325,7 +6317,7 @@
         "dependencies": [
           "jsr:@std/assert@1.0.19",
           "jsr:@std/fs@1.0.24",
-          "jsr:@std/path@1.1.4",
+          "jsr:@std/path@1.1.6",
           "npm:@nuxt/content@3.14.0",
           "npm:nuxt@4.5.0"
         ]
@@ -6337,7 +6329,7 @@
           "jsr:@std/fs@1.0.24",
           "jsr:@std/internal@1.0.13",
           "jsr:@std/jsonc@1.0.2",
-          "jsr:@std/path@1.1.4",
+          "jsr:@std/path@1.1.6",
           "npm:@inquirer/prompts@8.5.2",
           "npm:fzf@0.5.2"
         ]
